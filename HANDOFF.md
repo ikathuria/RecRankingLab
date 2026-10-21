@@ -1,39 +1,31 @@
-# Handoff: 2026-10-21 · M3 + M4 done (unmerged), M5 next
+# Handoff: 2026-10-21 · M1-M5 done, M6 next
 
 **Goal:** Portfolio data-science project: two-stage MovieLens 25M recommender with leakage-safe eval and a simulated A/B test. See PLAN.md (8 milestones).
-**Status:** M1, M2 merged. M3 = PR #3 (CI green, **not merged**: harness blocked the merge). M4 = PR #4, stacked on #3 (CI not yet checked). Working branch `claude/auto-2026-10-21-m4-ranker`.
+**Status:** M1-M4 merged to `main`. M5 on branch `claude/auto-2026-10-21-m5-twotower` (PR open, not merged).
 
 ## Next step
-1. Merge #3 (`gh pr merge 3 --merge`; owner may need to run it with `!`), retarget #4 to `main`, check CI, merge #4, `git checkout main && git pull`.
-2. **M5**: `src/recsys/twotower.py` (user/item towers, in-batch sampled softmax, CPU), exact dot-product retrieval, Recall@100 vs popularity, then two-stage eval (two-tower top-200 -> LightGBM re-rank). Branch from main after the merges.
-   -> verify: loss decreases on fixture, embedding-shape test, table in `docs/02-results.md`.
+Merge the M5 PR, then **M6** (`abtest.py`: simulated A/B test, power, CUPED, SRM; see PLAN.md). Label everything simulated.
 
-## Done
-- M3: `metrics.py`, `baselines.py`, `eval_baselines.py` (`make eval-baselines`), 13 tests (ef88a67).
-- M4: `sql/*.sql` (as_of), `features.py`, `ranker.py`, `tests/test_features.py` (98991dc). 23 tests pass, lint clean.
-- Test split results (3,833 users): Recall@20 recent-pop 0.0606, item-kNN 0.0546, LightGBM 0.0743 [0.0699, 0.0786]; paired diff vs recent-pop +0.0137 [0.0099, 0.0172]; dropping kNN features -0.0082 Recall@20. Details in `docs/02-results.md`.
+## Done (M5)
+- `src/recsys/twotower.py`, `src/recsys/two_stage.py` (`python -m recsys.two_stage all`, ~25 min), `build_candidates(retrieved=...)` in `features.py`, 5 new tests (28 pass, lint clean).
+- Test split (3,833 users): Recall@100 two-tower 0.1793 [0.1722, 0.1856], recent-pop 0.1659, item-kNN 0.1427, popularity 0.1046; Recall@200 0.2510 vs 0.2320 recent-pop.
+- Two-stage NDCG@10 0.1060 vs single-stage 0.0975 (paired +0.0085 [0.0048, 0.0121]); Recall@20 0.0771 vs 0.0743, diff CI includes 0. Two-tower alone NDCG@10 0.0980 is about equal to the single-stage ranker. Details in `docs/02-results.md`.
+- MLflow registry (local `mlflow.db`): two-tower-retriever, single-stage-ranker, two-stage-ranker, version 1 each.
 
 ## Decisions
-- Ranker features always as of train end; trained on val-period positives, early-stopped on 20% of val users; does not see val ratings at test time (fair vs baselines).
-- Candidates = union of top-100 from popularity, recent popularity, item-kNN; all candidates used (no negative sampling, deviation from PLAN).
-- Ablation drops both `knn_score` and `knn_rank`.
+- User tower is a user-id embedding (no history features); item tower is item id + genres. Eligible users are all train users, so ids are seen.
+- Epoch chosen by val Recall@100; training stopped at 8 epochs.
+- Two-stage ranker trained exactly like M4 (val-period positives, features as of train end) on two-tower top-200 candidates, plus tt_score/tt_rank.
+- Torch model logged with `serialization_format="pickle"` (pt2 needs an input example); pickle loads can run code, only load your own.
 
 ## Open threads
-- `i_age_years` is the top feature (22.8% gain). [Likely] partly a val-period "recent releases" artifact; untested. A quick ablation would settle it.
-- Candidate recall ceiling is only 0.219: caps any re-ranker, and is the motivation for M5 retrieval.
-- Recent popularity (90d window before train end) is the real bar for any model.
+- Val Recall@100 was still rising at epoch 8 (0.2707); [Likely] more epochs help a little. Not run.
+- The gain is on NDCG, not Recall@20; [Guessing] it comes from tt_score ordering rather than the wider candidate set. A union of two-tower + baseline candidates was not tried.
+- `i_age_years` ablation from M4 still untested.
 
 ## Gotchas
-- LightGBM on macOS needs `brew install libomp` (done here).
-- Agent `git push` worked this session; `gh pr merge` was denied by the classifier unless explicitly requested per PR.
-- MLflow logs to local `mlflow.db`/`mlruns` (gitignored). Metric names can't contain `@`.
-- Dataset builds cached in `data/cache/*.parquet` (gitignored); delete when features change.
-- `make eval-baselines` ~95 s; `python -m recsys.ranker` ~6 min.
-- Earlier: moving the repo breaks `.venv` shebangs (`rm -rf .venv && make install`); `timeout`/`uv` not installed.
+- **torch and lightgbm in one process segfault on macOS** (libomp clash at LightGBM Dataset creation). `two_stage` runs `retrieve` (torch) and `rank` (lightgbm) as separate processes sharing `data/cache/two_stage_all.pkl`; keep `import torch` out of the rank path. `ruff --fix` deletes the guarded `import torch` unless it keeps its noqa.
+- Earlier: LightGBM needs `brew install libomp`; MLflow metric names can't contain `@`; dataset caches in `data/cache` (delete when features change); moving the repo breaks `.venv`; `timeout`/`uv` not installed.
 
 ## Read first
-- `PLAN.md`: milestones. `docs/01-evaluation-protocol.md`: split and candidates. `docs/02-results.md`: numbers.
-- `src/recsys/features.py`, `src/recsys/ranker.py`, `src/recsys/baselines.py` (`KnnScorer`).
-
-## Uncommitted
-clean after this file is committed
+`PLAN.md`, `docs/02-results.md`, `src/recsys/two_stage.py`, `src/recsys/twotower.py`.

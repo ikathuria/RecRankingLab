@@ -54,3 +54,55 @@ Feature importance (gain share, full model):
 | u_mean_rating | 1.1% |
 | i_n_genres | 1.1% |
 | i_pos_rate | 1.1% |
+
+## Two-tower retrieval and two-stage ranking (M5)
+
+Two-tower: user-id and item-id(+genre) towers, 64-d L2-normalised embeddings, in-batch sampled softmax with logQ correction, temperature 0.05, batch 4096, Adam 2e-3, 137,682 users x 24,740 items, 9,981,093 train positives; trained in 9.6 min on CPU, epoch 8 kept (best val Recall@100 on 4,948 val users). Retrieval over all items is an exact dot product (0 s for 3,833 test users). Items the user rated in train are excluded for every retriever.
+
+### Retrieval on the test split
+
+| retriever | Recall@100 | Recall@200 |
+|---|---|---|
+| Two-tower (exact dot product) | 0.1793 [0.1722, 0.1856] | 0.2510 [0.2434, 0.2584] |
+| Popularity | 0.1046 [0.0991, 0.1101] | 0.1481 [0.1417, 0.1541] |
+| Recent popularity (90d) | 0.1659 [0.1594, 0.1725] | 0.2320 [0.2244, 0.2395] |
+| Item-kNN (cosine) | 0.1427 [0.1368, 0.1492] | 0.2008 [0.1939, 0.2078] |
+
+Paired bootstrap differences (mean [95% CI]):
+
+- two-tower − Popularity, recall@100: 0.0747 [0.0690, 0.0798]
+- two-tower − Popularity, recall@200: 0.1029 [0.0968, 0.1085]
+- two-tower − Recent popularity (90d), recall@100: 0.0133 [0.0071, 0.0193]
+- two-tower − Recent popularity (90d), recall@200: 0.0190 [0.0126, 0.0251]
+- two-tower − Item-kNN (cosine), recall@100: 0.0366 [0.0321, 0.0407]
+- two-tower − Item-kNN (cosine), recall@200: 0.0502 [0.0457, 0.0546]
+
+Training history:
+
+| epoch | train loss | val Recall@100 |
+|---|---|---|
+| 1 | 7.780 | 0.2400 |
+| 2 | 7.394 | 0.2523 |
+| 3 | 7.304 | 0.2579 |
+| 4 | 7.246 | 0.2667 |
+| 5 | 7.200 | 0.2633 |
+| 6 | 7.161 | 0.2686 |
+| 7 | 7.130 | 0.2695 |
+| 8 | 7.105 | 0.2707 |
+
+### Two-stage vs single-stage (3,833 test users)
+
+Both rankers use the same features (the two-stage one adds tt_score and tt_rank), LightGBM parameters and training protocol as M4. The candidate recall ceiling is the share of a user's test positives inside the candidate set.
+
+| system | Recall@10 | Recall@20 | NDCG@10 | NDCG@20 | candidate recall ceiling |
+|---|---|---|---|---|---|
+| Two-tower alone (top-20 by dot product) | 0.0403 [0.0376, 0.0435] | 0.0665 [0.0624, 0.0706] | 0.0980 [0.0928, 0.1030] | 0.0959 [0.0913, 0.1004] |  |
+| Single-stage LightGBM (baseline candidates) | 0.0465 [0.0432, 0.0499] | 0.0743 [0.0699, 0.0786] | 0.0975 [0.0926, 0.1024] | 0.0984 [0.0939, 0.1029] | 0.2187 |
+| Two-stage: two-tower top-200 -> LightGBM | 0.0473 [0.0442, 0.0506] | 0.0771 [0.0730, 0.0814] | 0.1060 [0.1009, 0.1111] | 0.1056 [0.1010, 0.1104] | 0.2510 |
+
+Paired bootstrap differences:
+
+- two-stage − single-stage, ndcg@10: 0.0085 [0.0048, 0.0121]
+- two-stage − single-stage, ndcg@20: 0.0072 [0.0042, 0.0104]
+- two-stage − single-stage, recall@10: 0.0008 [-0.0025, 0.0041]
+- two-stage − single-stage, recall@20: 0.0028 [-0.0011, 0.0067]

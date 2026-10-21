@@ -176,7 +176,9 @@ def write_results(results, base, ceiling, n_items, n_rows, n_users) -> None:
         + "\n".join(imp_lines) + "\n"
     )  # fmt: skip
     text = RESULTS.read_text() if RESULTS.exists() else "# Results\n"
-    RESULTS.write_text(text.split(MARKER)[0].rstrip() + "\n\n" + section)
+    head, _, rest = text.partition(MARKER)
+    later = rest.partition("\n## ")[2]  # sections written after this one (e.g. M5) are kept
+    RESULTS.write_text(head.rstrip() + "\n\n" + section + (f"\n## {later}" if later else ""))
 
 
 if __name__ == "__main__":
