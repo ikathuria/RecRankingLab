@@ -98,11 +98,11 @@ None. (MLflow uses a local `mlruns/` store.)
 
 ### Milestone 2: Data and evaluation protocol
 **Goal:** reproducible data load and a leakage-safe split, documented before any modelling.
-- [ ] `make data` downloads and unzips ml-25m into `data/raw/`, verifying the file checksum — Done when: second run is a no-op and row count is 25,000,095
-- [ ] `src/recsys/data.py`: load CSVs into a DuckDB file; tables `ratings`, `movies`, `tags` — Done when: `SELECT count(*)` matches expected counts (test on fixture)
-- [ ] `split.py`: global time cutoffs (train / val / test); per-user last-N holdout variant — Done when: tests assert no test timestamp precedes the cutoff and no user-item pair appears in two splits
-- [ ] Define the task in `docs/01-evaluation-protocol.md`: positive = rating ≥ 4, candidates = all unseen items, K ∈ {10, 20}, cold-start users excluded and counted — Done when: doc exists and the split code matches it
-- [ ] Gate: lint and tests pass
+- [x] `make data` downloads and unzips ml-25m into `data/raw/`, verifying the file checksum — Done when: second run is a no-op and row count is 25,000,095
+- [x] `src/recsys/data.py`: load CSVs into a DuckDB file; tables `ratings`, `movies`, `tags` — Done when: `SELECT count(*)` matches expected counts (test on fixture)
+- [x] `split.py`: global time cutoffs (train / val / test); per-user last-N holdout variant — Done when: tests assert no test timestamp precedes the cutoff and no user-item pair appears in two splits
+- [x] Define the task in `docs/01-evaluation-protocol.md`: positive = rating ≥ 4, candidates = all unseen items, K ∈ {10, 20}, cold-start users excluded and counted — Done when: doc exists and the split code matches it
+- [x] Gate: lint and tests pass
 
 ### Milestone 3: Metrics and baselines
 **Goal:** trustworthy numbers for simple models.
