@@ -131,7 +131,7 @@ None. (MLflow uses a local `mlruns/` store.)
 - [x] `docs/03-ab-simulation.md`: generative assumptions. Control = popularity ranker, treatment = LightGBM ranker. Per-user simulated engagement is drawn from held-out ratings (users randomised 50/50, outcome = whether each user engages with an item in their shown top-10) with a pre-period covariate (prior activity) — Done when: doc states every assumption and the limits
 - [x] `abtest.py`: power analysis (MDE vs sample size), two-sample test with CI, CUPED adjustment, sample-ratio-mismatch check — Done when: unit tests recover a known injected effect, and CUPED variance ≤ unadjusted variance on simulated data
 - [x] Simulation study: run N=1,000 A/A tests (false-positive rate ≈ α) and N=1,000 A/B tests at the injected effect (empirical power ≈ planned) — Done when: both rates are reported in the doc with the plot
-- [ ] Gate: lint and tests pass
+- [x] Gate: lint and tests pass
 
 ### Milestone 7: Dashboard and write-up
 **Goal:** something a recruiter can open in two minutes.
