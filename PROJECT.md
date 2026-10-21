@@ -22,7 +22,7 @@ SQL lives in `sql/`, one query per file. Every feature query takes `as_of`. Raw 
 ## Current status
 | Milestone | Status |
 |---|---|
-| M1 Scaffold | 🟡 done locally 2026-10-21; CI unverified until the repo is pushed |
+| M1 Scaffold | ✅ done 2026-10-21 (PR #1 merged, CI green) |
 | M2 Data + eval protocol | — |
 | M3 Metrics + baselines | — |
 | M4 SQL features + LightGBM | — |
@@ -32,7 +32,7 @@ SQL lives in `sql/`, one query per file. Every feature query takes `as_of`. Raw 
 | M8 Polish | — |
 
 ## Decision log
-- 2026-10-21 — Dataset: MovieLens 25M. Python 3.12 + venv/pip/Makefile (uv not installed here). Public repo planned; not yet pushed.
+- 2026-10-21 — Dataset: MovieLens 25M. Python 3.12 + venv/pip/Makefile (uv not installed here). Public repo: github.com/ikathuria/RecRankingLab.
 
 ## Glossary
 - **NDCG@K / Recall@K** — ranking quality over the top K recommendations.

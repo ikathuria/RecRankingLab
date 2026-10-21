@@ -92,7 +92,7 @@ None. (MLflow uses a local `mlruns/` store.)
 ### Milestone 1: Scaffold
 **Goal:** repo runs lint and tests in a clean venv and CI.
 - [x] `pyproject.toml`, Makefile (`install`, `data`, `test`, `lint`), `src/recsys/`, `tests/` — Done when: `make install && make test` passes with one placeholder test
-- [ ] `.github/workflows/ci.yml` running ruff + pytest — Done when: CI green on push (file written; not yet run, repo has no remote)
+- [x] `.github/workflows/ci.yml` running ruff + pytest — Done when: CI green on push (green on PR #1, 2026-10-21)
 - [x] README stub with project goal and the "simulated A/B" disclaimer — Done when: file exists and is linked from PROJECT.md
 - [x] Gate: lint and tests pass
 
