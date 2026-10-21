@@ -1,6 +1,6 @@
 PY := .venv/bin/python
 
-.PHONY: install test lint
+.PHONY: install test lint data
 
 install:
 	python3.12 -m venv .venv
@@ -11,3 +11,7 @@ test:
 
 lint:
 	$(PY) -m ruff check .
+
+# Download + verify (md5) + extract MovieLens 25M, then load into data/movielens.duckdb
+data:
+	$(PY) -m recsys.data all
