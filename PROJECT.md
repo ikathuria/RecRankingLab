@@ -41,3 +41,5 @@ SQL lives in `sql/`, one query per file. Every feature query takes `as_of`. Raw 
 - **CUPED** — variance reduction using a pre-experiment covariate.
 - **MDE** — minimum detectable effect.
 - **SRM** — sample ratio mismatch.
+
+- M3 (2026-10-21): metrics.py (Recall/NDCG/MAP@K, coverage, bootstrap + paired bootstrap CI), baselines.py (popularity, recent popularity 90d, item-kNN), `make eval-baselines` -> MLflow + docs/02-results.md.
