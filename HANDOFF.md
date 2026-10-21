@@ -6,7 +6,7 @@
 - Ran M1 only (bounded batch), unattended, local branch, no push.
 
 ## Next step
-1. Create the GitHub repo `ikathuria/recRankingLab` (public per plan; needs the owner), add remote, push the branch, open a PR, confirm CI is green (the only open M1 task).
+1. Create the GitHub repo `ikathuria/RecRankingLab` (public per plan; needs the owner), add remote, push the branch, open a PR, confirm CI is green (the only open M1 task).
 2. Merge, then start M2 (data download + time split).
 
 ## Uncommitted
