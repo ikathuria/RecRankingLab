@@ -1,4 +1,4 @@
-# rec-ranking-lab
+# recRankingLab
 
 A two-stage movie recommender (two-tower retrieval + LightGBM ranker) on
 [MovieLens 25M](https://grouplens.org/datasets/movielens/25m/), with a leakage-safe time split,

@@ -1,4 +1,4 @@
-# rec-ranking-lab
+# recRankingLab
 
 > A two-stage movie recommender (candidate generation + learned ranker) with an honest offline evaluation and a simulated A/B test (power analysis, CUPED), built on MovieLens 25M for a data-science portfolio.
 
@@ -67,7 +67,7 @@ Skipped: auth, payments, database server, hosting beyond optional Streamlit Comm
 ## Project Structure
 
 ```
-rec-ranking-lab/
+recRankingLab/
   PLAN.md  PROJECT.md  CLAUDE.md  README.md  Makefile  pyproject.toml
   data/            # raw/ downloaded (gitignored); fixtures/ tiny sample for tests (committed)
   sql/             # DuckDB feature + label queries, one file each

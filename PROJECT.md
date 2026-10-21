@@ -1,4 +1,4 @@
-# rec-ranking-lab — Project Tracker
+# recRankingLab — Project Tracker
 
 > Living context map. Keep in sync whenever structure, status, or decisions change.
 
