@@ -4,7 +4,7 @@
 **Status:** M1-M4 merged to `main`. M5 on branch `claude/auto-2026-10-21-m5-twotower` (PR open, not merged).
 
 ## Next step
-Merge the M5 PR, then **M6** (`abtest.py`: simulated A/B test, power, CUPED, SRM; see PLAN.md). Label everything simulated.
+Check CI on PR #5 (was pending at handoff) and merge it, then **M6** (`abtest.py`: simulated A/B test, power, CUPED, SRM; see PLAN.md). Label everything simulated.
 
 ## Done (M5)
 - `src/recsys/twotower.py`, `src/recsys/two_stage.py` (`python -m recsys.two_stage all`, ~25 min), `build_candidates(retrieved=...)` in `features.py`, 5 new tests (28 pass, lint clean).
