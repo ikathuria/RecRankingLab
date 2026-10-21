@@ -113,11 +113,11 @@ None. (MLflow uses a local `mlruns/` store.)
 
 ### Milestone 4: SQL feature pipeline and LightGBM ranker
 **Goal:** a learned ranker evaluated against the baselines.
-- [ ] `sql/*.sql`: user features (activity, mean rating, genre affinity), item features (popularity, mean rating, age, genres), user-item features (genre match, kNN score); all take an `as_of` parameter — Done when: a test builds features at a cutoff and asserts max source timestamp ≤ cutoff
-- [ ] Training set builder: positives + sampled negatives from the candidate set, grouped by user — Done when: group sizes sum to row count (test)
-- [ ] `ranker.py`: LightGBM LambdaRank trained with early stopping on val, params and metrics logged to MLflow — Done when: run appears in MLflow with val NDCG@10
-- [ ] Re-rank the baseline candidates on test and add to the results table; feature-importance and one ablation (drop kNN score) — Done when: `docs/02-results.md` reports the ranker vs baselines with CIs and the ablation
-- [ ] Gate: lint and tests pass
+- [x] `sql/*.sql`: user features (activity, mean rating, genre affinity), item features (popularity, mean rating, age, genres), user-item features (genre match, kNN score); all take an `as_of` parameter — Done when: a test builds features at a cutoff and asserts max source timestamp ≤ cutoff
+- [x] Training set builder: positives + sampled negatives from the candidate set, grouped by user — Done when: group sizes sum to row count (test)
+- [x] `ranker.py`: LightGBM LambdaRank trained with early stopping on val, params and metrics logged to MLflow — Done when: run appears in MLflow with val NDCG@10
+- [x] Re-rank the baseline candidates on test and add to the results table; feature-importance and one ablation (drop kNN score) — Done when: `docs/02-results.md` reports the ranker vs baselines with CIs and the ablation
+- [x] Gate: lint and tests pass
 
 ### Milestone 5: Two-tower candidate generation
 **Goal:** replace the kNN candidate source with a learned retriever and measure the two-stage system.

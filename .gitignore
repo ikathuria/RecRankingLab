@@ -9,3 +9,4 @@ mlartifacts/
 .env
 .DS_Store
 mlflow.db
+data/cache/
