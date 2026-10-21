@@ -1,0 +1,35 @@
+{
+ "plan": {
+  "delta": 0.05927195587193902,
+  "sd": 0.460034849701301,
+  "rho": -0.025740861031508293,
+  "variance_ratio": 0.9993374080733566,
+  "n_per_arm": 946,
+  "n_per_arm_cuped": 946
+ },
+ "study": {
+  "n_users": 1892,
+  "n_sims": 1000,
+  "alpha": 0.05,
+  "aa": {
+   "reject_naive": 0.042,
+   "reject_cuped": 0.041,
+   "mean_se_naive": 0.020566837793037165,
+   "mean_se_cuped": 0.020554363851818018,
+   "mean_est_naive": -0.0006501057082452428,
+   "mean_est_cuped": -0.0006576351069020967,
+   "srm_flags": 0
+  },
+  "ab": {
+   "reject_naive": 0.787,
+   "reject_cuped": 0.789,
+   "mean_se_naive": 0.021153259174647693,
+   "mean_se_cuped": 0.021143175175209552,
+   "mean_est_naive": 0.05811205073995772,
+   "mean_est_cuped": 0.0580772135853298,
+   "srm_flags": 0
+  },
+  "pop_users": 3833,
+  "seed": 0
+ }
+}
