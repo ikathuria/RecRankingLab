@@ -24,9 +24,9 @@ SQL lives in `sql/`, one query per file. Every feature query takes `as_of`. Raw 
 |---|---|
 | M1 Scaffold | ✅ done 2026-10-21 (PR #1 merged, CI green) |
 | M2 Data + eval protocol | ✅ done 2026-10-21 (branch claude/auto-2026-10-21-m2-data) |
-| M3 Metrics + baselines | — |
-| M4 SQL features + LightGBM | — |
-| M5 Two-tower | — |
+| M3 Metrics + baselines | ✅ merged (PR #3) |
+| M4 SQL features + LightGBM | ✅ merged (PR #4) |
+| M5 Two-tower | ✅ done 2026-10-21 (branch claude/auto-2026-10-21-m5-twotower) |
 | M6 Simulated A/B | — |
 | M7 Dashboard + write-up | — |
 | M8 Polish | — |
@@ -44,3 +44,4 @@ SQL lives in `sql/`, one query per file. Every feature query takes `as_of`. Raw 
 
 - M3 (2026-10-21): metrics.py (Recall/NDCG/MAP@K, coverage, bootstrap + paired bootstrap CI), baselines.py (popularity, recent popularity 90d, item-kNN), `make eval-baselines` -> MLflow + docs/02-results.md.
 - M4 (2026-10-21): sql/*.sql feature pipeline (as_of param), features.py (candidates = union of top-100 from 3 baselines, all candidates used instead of sampled negatives), ranker.py (LightGBM LambdaRank, trained on val-period positives, features as of train end). Test Recall@20 0.0743 vs recent-pop 0.0606 (paired diff CI excludes 0). Candidate recall ceiling 0.219.
+- M5 (2026-10-21): twotower.py (id + genre towers, in-batch sampled softmax with logQ, CPU, 8 epochs, ~10 min), two_stage.py in two processes (`retrieve` torch / `rank` lightgbm; mixing them segfaults on macOS). Test Recall@100 0.179 vs recent-pop 0.166 vs popularity 0.105; two-stage NDCG@10 0.1060 vs single-stage 0.0975 (paired diff +0.0085 [0.0048, 0.0121]); Recall@20 diff not significant.

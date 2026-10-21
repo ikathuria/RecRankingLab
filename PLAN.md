@@ -121,10 +121,10 @@ None. (MLflow uses a local `mlruns/` store.)
 
 ### Milestone 5: Two-tower candidate generation
 **Goal:** replace the kNN candidate source with a learned retriever and measure the two-stage system.
-- [ ] `twotower.py`: user and item towers, in-batch sampled softmax, CPU training on the train split — Done when: training loss decreases on the fixture and a test checks embedding shapes
-- [ ] Retrieval with exact dot product (no ANN needed at this scale); report Recall@100 for candidate generation — Done when: Recall@100 beats popularity in the results table
-- [ ] Two-stage eval: two-tower top-200 → LightGBM re-rank, NDCG@10 vs single-stage — Done when: table updated and the MLflow registry holds both models
-- [ ] Gate: lint and tests pass
+- [x] `twotower.py`: user and item towers, in-batch sampled softmax, CPU training on the train split — Done when: training loss decreases on the fixture and a test checks embedding shapes
+- [x] Retrieval with exact dot product (no ANN needed at this scale); report Recall@100 for candidate generation — Done when: Recall@100 beats popularity in the results table
+- [x] Two-stage eval: two-tower top-200 → LightGBM re-rank, NDCG@10 vs single-stage — Done when: table updated and the MLflow registry holds both models
+- [x] Gate: lint and tests pass
 
 ### Milestone 6: Simulated A/B test
 **Goal:** a correct experimentation workflow on top of the models, clearly labelled as a simulation.

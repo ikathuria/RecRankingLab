@@ -82,3 +82,15 @@ def test_candidates_cover_unseen_items_only(con):
     cand = build_candidates(con, [1], n=3)
     assert len(cand) > 0 and set(cand["movie_id"]).isdisjoint(set(range(1, 9)))
     assert train_end(con) == 8 * DAY
+
+
+def test_retrieved_candidates_replace_the_source_union(con):
+    import numpy as np
+
+    retrieved = {u: (np.array([11, 12]), np.array([0.9, 0.5])) for u in (1, 2)}
+    df = build_dataset(con, [1, 2], "test", n=5, retrieved=retrieved)
+    assert sorted(df["movie_id"].unique().to_list()) == [11, 12]
+    assert df.height == 4
+    row = df.filter((df["user_id"] == 1) & (df["movie_id"] == 12)).row(0, named=True)
+    assert (row["tt_rank"], row["tt_score"], row["label"]) == (2, 0.5, 0)
+    assert df.filter((df["user_id"] == 1) & (df["movie_id"] == 11))["label"][0] == 1  # u1 test +
