@@ -91,10 +91,10 @@ None. (MLflow uses a local `mlruns/` store.)
 
 ### Milestone 1: Scaffold
 **Goal:** repo runs lint and tests in a clean venv and CI.
-- [ ] `pyproject.toml`, Makefile (`install`, `data`, `test`, `lint`), `src/recsys/`, `tests/` — Done when: `make install && make test` passes with one placeholder test
-- [ ] `.github/workflows/ci.yml` running ruff + pytest — Done when: CI green on push
-- [ ] README stub with project goal and the "simulated A/B" disclaimer — Done when: file exists and is linked from PROJECT.md
-- [ ] Gate: lint and tests pass
+- [x] `pyproject.toml`, Makefile (`install`, `data`, `test`, `lint`), `src/recsys/`, `tests/` — Done when: `make install && make test` passes with one placeholder test
+- [ ] `.github/workflows/ci.yml` running ruff + pytest — Done when: CI green on push (file written; not yet run, repo has no remote)
+- [x] README stub with project goal and the "simulated A/B" disclaimer — Done when: file exists and is linked from PROJECT.md
+- [x] Gate: lint and tests pass
 
 ### Milestone 2: Data and evaluation protocol
 **Goal:** reproducible data load and a leakage-safe split, documented before any modelling.
