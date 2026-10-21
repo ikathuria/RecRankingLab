@@ -43,3 +43,4 @@ SQL lives in `sql/`, one query per file. Every feature query takes `as_of`. Raw 
 - **SRM** — sample ratio mismatch.
 
 - M3 (2026-10-21): metrics.py (Recall/NDCG/MAP@K, coverage, bootstrap + paired bootstrap CI), baselines.py (popularity, recent popularity 90d, item-kNN), `make eval-baselines` -> MLflow + docs/02-results.md.
+- M4 (2026-10-21): sql/*.sql feature pipeline (as_of param), features.py (candidates = union of top-100 from 3 baselines, all candidates used instead of sampled negatives), ranker.py (LightGBM LambdaRank, trained on val-period positives, features as of train end). Test Recall@20 0.0743 vs recent-pop 0.0606 (paired diff CI excludes 0). Candidate recall ceiling 0.219.

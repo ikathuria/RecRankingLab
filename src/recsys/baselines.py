@@ -57,42 +57,54 @@ def recent_popularity(
     return {u: _top_k_by_rank(order, seen.get(u, set()), k) for u in users}
 
 
-def item_knn(con: duckdb.DuckDBPyConnection, users: list[int], k: int = 20, batch: int = 256):
-    """Item-item kNN: score(u, j) = sum over u's liked items i of cosine(i, j).
+class KnnScorer:
+    """Item-item cosine kNN over the binary user x item matrix of train positives.
 
-    Cosine is on the binary user x item matrix of train positives. It is applied as
-    (U_b X^T) X with column-normalised X, which equals U_b S for the full item-item similarity S
-    without materialising S (59k x 59k). Users with no liked train item fall back to popularity.
+    score(u, j) = sum over u's liked items i of cosine(i, j), applied as (U_b X^T) X with
+    column-normalised X. That equals U_b S for the full item-item similarity S without
+    materialising S (59k x 59k).
     """
-    pos = _train_positives(con)
-    pop_order = _popularity_order(pos)
-    items, item_idx = np.unique(pos["movie_id"].to_numpy(), return_inverse=True)
-    all_users, user_idx = np.unique(pos["user_id"].to_numpy(), return_inverse=True)
-    x = sp.csr_matrix(
-        (np.ones(len(pos), dtype=np.float32), (user_idx, item_idx)),
-        shape=(len(all_users), len(items)),
-    )
-    norm = np.sqrt(np.asarray(x.sum(axis=0)).ravel())
-    xn = (x @ sp.diags(1.0 / norm)).tocsr().astype(np.float32)
-    xn_t = xn.T.tocsr()
-    row_of = {u: i for i, u in enumerate(all_users)}
-    item_col = {m: i for i, m in enumerate(items)}
-    seen = _seen(con, users)
 
+    def __init__(self, con: duckdb.DuckDBPyConnection):
+        pos = _train_positives(con)
+        self.pop_order = _popularity_order(pos)
+        self.items, item_idx = np.unique(pos["movie_id"].to_numpy(), return_inverse=True)
+        all_users, user_idx = np.unique(pos["user_id"].to_numpy(), return_inverse=True)
+        self.x = sp.csr_matrix(
+            (np.ones(len(pos), dtype=np.float32), (user_idx, item_idx)),
+            shape=(len(all_users), len(self.items)),
+        )
+        norm = np.sqrt(np.asarray(self.x.sum(axis=0)).ravel())
+        self.xn = (self.x @ sp.diags(1.0 / norm)).tocsr().astype(np.float32)
+        self.xn_t = self.xn.T.tocsr()
+        self.row_of = {u: i for i, u in enumerate(all_users)}
+        self.item_col = {m: i for i, m in enumerate(self.items)}
+
+    def batches(self, con: duckdb.DuckDBPyConnection, users: list[int], batch: int = 256):
+        """Yield (users, scores) for users with a liked train item; scores[r, c] is for
+        self.items[c], with the user's already-rated items set to -inf."""
+        seen = _seen(con, users)
+        with_hist = [u for u in users if u in self.row_of]
+        for start in range(0, len(with_hist), batch):
+            chunk = with_hist[start : start + batch]
+            hist = self.x[[self.row_of[u] for u in chunk]]
+            scores = ((hist @ self.xn_t) @ self.xn).toarray()
+            for r, u in enumerate(chunk):
+                scores[r, [self.item_col[m] for m in seen.get(u, ()) if m in self.item_col]] = -np.inf
+            yield chunk, scores
+
+
+def item_knn(con: duckdb.DuckDBPyConnection, users: list[int], k: int = 20, batch: int = 256):
+    """Top-K by item-kNN score. Users with no liked train item fall back to popularity."""
+    model = KnnScorer(con)
     recs: dict[int, np.ndarray] = {}
-    for start in range(0, len(users), batch):
-        chunk = users[start : start + batch]
-        has_hist = [u for u in chunk if u in row_of]
-        for u in chunk:
-            if u not in row_of:
-                recs[u] = _top_k_by_rank(pop_order, seen.get(u, set()), k)
-        if not has_hist:
-            continue
-        hist = x[[row_of[u] for u in has_hist]]
-        scores = ((hist @ xn_t) @ xn).toarray()
-        for r, u in enumerate(has_hist):
-            mask = [item_col[m] for m in seen.get(u, ()) if m in item_col]
-            scores[r, mask] = -np.inf
-            top = np.argpartition(-scores[r], k)[:k]
-            recs[u] = items[top[np.argsort(-scores[r, top], kind="stable")]]
+    for chunk, scores in model.batches(con, users, batch):
+        for r, u in enumerate(chunk):
+            top = np.argpartition(-scores[r], min(k, scores.shape[1] - 1))[:k]
+            top = top[np.argsort(-scores[r, top], kind="stable")]
+            recs[u] = model.items[top[np.isfinite(scores[r, top])]]
+    missing = [u for u in users if u not in recs]
+    seen = _seen(con, missing)
+    for u in missing:
+        recs[u] = _top_k_by_rank(model.pop_order, seen.get(u, set()), k)
     return recs
