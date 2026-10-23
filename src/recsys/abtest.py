@@ -17,6 +17,7 @@ from scipy import stats
 
 RESULTS_DIR = Path(__file__).resolve().parents[2] / "results"
 INPUTS = RESULTS_DIR / "ab_inputs.parquet"
+RECS = RESULTS_DIR / "recs_sample.parquet"
 STUDY = RESULTS_DIR / "ab_study.json"
 PLOT = Path(__file__).resolve().parents[2] / "docs" / "03-ab-power.png"
 DOC = Path(__file__).resolve().parents[2] / "docs" / "03-ab-simulation.md"
@@ -155,8 +156,8 @@ def plan(pop: pl.DataFrame, alpha: float = 0.05, power: float = 0.8) -> dict:
 # --- inputs from the models ------------------------------------------------------------------
 
 
-def build_inputs(limit: int | None) -> pl.DataFrame:
-    """Per-user hits in the control (popularity) and treatment (LightGBM ranker) top-10."""
+def scored_test(limit: int | None):
+    """Test-split candidates scored by the M4 ranker (same training protocol as ranker.main)."""
     import duckdb
 
     from recsys import ranker
@@ -173,17 +174,43 @@ def build_inputs(limit: int | None) -> pl.DataFrame:
     model = ranker.fit(ranker.drop_empty_groups(val.filter(~in_es)),
                        ranker.drop_empty_groups(val.filter(in_es)), FEATURES)
     scored = test.with_columns(pl.Series("score", model.predict(test.select(FEATURES).to_numpy())))
-    treat = (scored.sort(["user_id", "score"], descending=[False, True]).group_by("user_id", maintain_order=True)
-             .head(TOP_N).group_by("user_id").agg(pl.col("label").sum().alias("hits_treatment")))
-    ctrl = (test.filter(pl.col("pop_rank") <= TOP_N).group_by("user_id")
+    return con, scored
+
+
+def build_inputs(scored: pl.DataFrame) -> pl.DataFrame:
+    """Per-user hits in the control (popularity) and treatment (LightGBM ranker) top-10."""
+    treat = (scored.sort(["user_id", "score"], descending=[False, True])
+             .group_by("user_id", maintain_order=True).head(TOP_N)
+             .group_by("user_id").agg(pl.col("label").sum().alias("hits_treatment")))
+    ctrl = (scored.filter(pl.col("pop_rank") <= TOP_N).group_by("user_id")
             .agg(pl.col("label").sum().alias("hits_control")))
-    pre = test.group_by("user_id").agg(pl.col("u_n_ratings").first())
+    pre = scored.group_by("user_id").agg(pl.col("u_n_ratings").first())
     df = pre.join(ctrl, on="user_id", how="left").join(treat, on="user_id", how="left").fill_null(0)
     return df.with_columns(
         pre_activity=pl.col("u_n_ratings").log1p(),
         q_control=pl.Series(engagement_prob(df["hits_control"].to_numpy().astype(float))),
         q_treatment=pl.Series(engagement_prob(df["hits_treatment"].to_numpy().astype(float))),
     ).sort("user_id")
+
+
+def build_recs_sample(con, scored: pl.DataFrame, n_users: int = 200) -> pl.DataFrame:
+    """Top-10 lists per arm for a seeded sample of test users, with titles, for the dashboard."""
+    users = sorted(np.random.default_rng(0).choice(
+        scored["user_id"].unique().to_numpy(), size=min(n_users, scored["user_id"].n_unique()),
+        replace=False).tolist())  # fmt: skip
+    sub = scored.filter(pl.col("user_id").is_in(users))
+    titles = pl.from_pandas(con.execute("SELECT movie_id, title FROM movies").df())
+    arms = {
+        "Popularity (control)": sub.filter(pl.col("pop_rank") <= TOP_N)
+        .with_columns(rank=pl.col("pop_rank")),
+        "LightGBM ranker (treatment)": sub.sort(["user_id", "score"], descending=[False, True])
+        .with_columns(rank=pl.col("score").rank("ordinal", descending=True).over("user_id"))
+        .filter(pl.col("rank") <= TOP_N),
+    }
+    frames = [d.select("user_id", "movie_id", pl.col("rank").cast(pl.Int64), "label")
+              .with_columns(arm=pl.lit(a)) for a, d in arms.items()]
+    return (pl.concat(frames).join(titles, on="movie_id", how="left")
+            .rename({"label": "liked_later"}).sort("user_id", "arm", "rank"))
 
 
 # --- report ----------------------------------------------------------------------------------
@@ -254,8 +281,12 @@ def main() -> None:
     RESULTS_DIR.mkdir(exist_ok=True)
     path = INPUTS if not a.limit else RESULTS_DIR / f"ab_inputs_{a.limit}.parquet"
     if a.stage in ("inputs", "all"):
-        build_inputs(a.limit).write_parquet(path)
+        con, scored = scored_test(a.limit)
+        build_inputs(scored).write_parquet(path)
         print("wrote", path, flush=True)
+        if not a.limit:
+            build_recs_sample(con, scored).write_parquet(RECS)
+            print("wrote", RECS, flush=True)
     if a.stage in ("study", "all"):
         pop = pl.read_parquet(path)
         pl_ = plan(pop)
