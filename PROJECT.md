@@ -28,7 +28,7 @@ SQL lives in `sql/`, one query per file. Every feature query takes `as_of`. Raw 
 | M4 SQL features + LightGBM | ✅ merged (PR #4) |
 | M5 Two-tower | ✅ done 2026-10-21 (branch claude/auto-2026-10-21-m5-twotower) |
 | M6 Simulated A/B | done (PR open) |
-| M7 Dashboard + write-up | — |
+| M7 Dashboard and write-up | done (PR open) |
 | M8 Polish | — |
 
 ## Decision log

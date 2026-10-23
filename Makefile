@@ -1,6 +1,6 @@
 PY := .venv/bin/python
 
-.PHONY: install test lint data eval-baselines
+.PHONY: install test lint data eval-baselines app
 
 install:
 	python3.12 -m venv .venv
@@ -18,3 +18,6 @@ data:
 
 eval-baselines:
 	$(PY) -m recsys.eval_baselines --split test
+
+app:
+	.venv/bin/streamlit run app/streamlit_app.py

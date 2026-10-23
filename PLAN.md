@@ -135,8 +135,8 @@ None. (MLflow uses a local `mlruns/` store.)
 
 ### Milestone 7: Dashboard and write-up
 **Goal:** something a recruiter can open in two minutes.
-- [ ] Streamlit app: metrics table, per-user recommendation viewer, A/B power curve, CUPED before/after — Done when: `make app` serves it and each tab renders without errors on the committed result artefacts
-- [ ] README: problem, results table, plots, "what I'd do next", limitations (non-commercial dataset, simulated A/B), GroupLens citation — Done when: every number in the README matches `docs/02-results.md`
+- [x] Streamlit app: metrics table, per-user recommendation viewer, A/B power curve, CUPED before/after — Done when: `make app` serves it and each tab renders without errors on the committed result artefacts
+- [x] README: problem, results table, plots, "what I'd do next", limitations (non-commercial dataset, simulated A/B), GroupLens citation — Done when: every number in the README matches `docs/02-results.md`
 - [ ] Gate: lint and tests pass
 
 ### Milestone 8: Polish

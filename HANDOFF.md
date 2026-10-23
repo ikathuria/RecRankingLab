@@ -1,12 +1,17 @@
-# Handoff: 2026-10-21 · M1-M6 done, M7 next
+# Handoff: 2026-10-23 · M1-M7 done, M8 next
 
 **Goal:** Portfolio data-science project: two-stage MovieLens 25M recommender with leakage-safe eval and a simulated A/B test. See PLAN.md (8 milestones).
-**Status:** M1-M5 merged to `main`. M6 on branch `claude/auto-2026-10-21-m6-abtest` (PR open, not merged).
+**Status:** M1-M6 merged to `main`. M7 on branch `claude/auto-2026-10-23-m7-dashboard` (PR open, not merged).
 
 ## Next step
-Merge the M6 PR once CI is green, then **M7** (Streamlit app + README; see PLAN.md). The app should read `results/ab_inputs.parquet`, `results/ab_study.json` and `docs/03-ab-power.png`.
+Merge the M7 PR once CI is green, then **M8**: clean-clone reproduction (`make install data ...`; the README lists the command sequence, untested from scratch) and re-read docs so each claim links to an MLflow run or table.
 
-## Done (M6)
+## Done (M7)
+- `app/streamlit_app.py` (`make app`): Metrics tab renders tables verbatim from `docs/02-results.md`; Recommendations (200 sampled test users, popularity vs single-stage ranker, from `results/recs_sample.parquet`); A/B power and CUPED tabs, labelled simulated. `tests/test_app.py` uses AppTest (37 tests pass, lint clean). Server health check returned 200.
+- `abtest.py` refactored: `scored_test`, `build_inputs(scored)`, `build_recs_sample`; the `inputs` stage now also writes `recs_sample.parquet`. Rerun reproduced `ab_inputs.parquet` unchanged.
+- README rewritten; every 3-4 decimal number checked to appear in docs/02 or docs/03.
+
+## Done (M6, earlier)
 - `src/recsys/abtest.py` (`python -m recsys.abtest [inputs|study|all]`; `inputs` retrains the M4 ranker, a few min), `tests/test_abtest.py` (8 tests; 36 total pass, lint clean), `docs/03-ab-simulation.md`.
 - Simulated: control popularity top-10 vs LightGBM top-10, 3,833 test users resampled, engagement = P(click >= 1 shown item) with assumed click probs 0.30 (later-liked) / 0.02 (other). Modelled effect 0.059; 946 users/arm for 80% power.
 - 1,000 A/A: false-positive rate 0.042 (target 0.05). 1,000 A/B at n=1,892: power 0.787 vs planned 0.800. 0 SRM flags.
